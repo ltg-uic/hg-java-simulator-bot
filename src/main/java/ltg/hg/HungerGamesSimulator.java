@@ -81,8 +81,9 @@ public class HungerGamesSimulator {
 	
 	
 	private int selectLuckyWinner() {
-		Collections.sort(tags);
-		return new Random().nextInt(tags.size()/4);
+		Collections.sort(tags, Collections.reverseOrder());
+		int random_window = tags.size()/4;
+		return new Random().nextInt(random_window);
 	}
 	
 	
@@ -92,9 +93,10 @@ public class HungerGamesSimulator {
 		payload.put("departure", tags.get(i).getCurrentLocation());
 		payload.put("arrival", tags.get(i).getDesiredDestination());
 		LTGEvent e = new LTGEvent("rfid_update", null, null, payload);
-		//eh.generateEvent(e);
+		eh.generateEvent(e);
 	}
 
+	
 	private void setNewLocations(int idx) {
 		String old_desired_location_now_current = tags.get(idx).getDesiredDestination();
 		String new_desired_location = null;
@@ -115,13 +117,18 @@ public class HungerGamesSimulator {
 	}
 
 	
-
-
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		HungerGamesSimulator hg = new HungerGamesSimulator("hg-simulator-bot", "hg-test");
+		if ( args.length != 2 || 
+				args[0]==null || args[0].isEmpty() || 
+				args[1]==null || args[1].isEmpty() ) {
+			System.out.println("Need to specify the username/password (eg. hg-bots#simulator) and "
+					+ "the chatroom ID (eg. hg-test). Terminating...");
+			System.exit(0);
+		}
+		HungerGamesSimulator hg = new HungerGamesSimulator(args[0], args[1]);
 		hg.generateEvents();
 	}
 
