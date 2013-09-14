@@ -3,12 +3,14 @@
  */
 package ltg.hg;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import ltg.commons.ltg_handler.LTGEvent;
 import ltg.commons.ltg_handler.LTGEventHandler;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -18,8 +20,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class HungerGamesSimulator {
 
-	private Tag[] rfid_ids = {new Tag("1623110"), new Tag("3"), new Tag("2")};
-	private String[] patches = {"hg-patch-1", "hg-patch-2", "hg-patch-3", "hg-patch-4"};
+	private Tag[] rfid_ids_array = {	
+			new Tag("1623305"), new Tag("1623303"), new Tag("1623386"), new Tag("1623210"), new Tag("1623373"), 
+			new Tag("1623115"), new Tag("1623667"), new Tag("1623110"), new Tag("1623683"), new Tag("1623257"),
+			new Tag("1623126"), new Tag("1623238"), new Tag("1623624"), new Tag("1623454"), new Tag("1623972"),
+			new Tag("1623302"), new Tag("1623392"), new Tag("1623663"), new Tag("1623728"), new Tag("1623641")
+	};
+	private List<Tag> tags = Arrays.asList(rfid_ids_array); 
+	private String[] patches = {"patch-1", "patch-2", "patch-3", "patch-4", "patch-5", "patch-6"};
 
 	private LTGEventHandler eh = null;
 
@@ -30,7 +38,7 @@ public class HungerGamesSimulator {
 		// Initialize bot
 		// --------------
 		eh = new LTGEventHandler(usernameAndPass+"@ltg.evl.uic.edu", usernameAndPass, chatAndDBId+"@conference.ltg.evl.uic.edu");
-		//HttpClient
+		
 
 		// ------------------
 		// Register listeners
@@ -46,20 +54,18 @@ public class HungerGamesSimulator {
 
 
 	/**
-	 * Starts generating all the events 
+	 * Starts generating arrivals and departures 
 	 */
 	public void generateEvents() {
-		// Assign a random starting location to all tags
-		assignInitialLocation();
-		// When flush = rfid_ids.lentgh then we flushed the initial location
-		int flush = 0;
+		// Assign a random destination to all tags
+		assignInitialDestination();
 		// Event generation loop
 		while(!Thread.interrupted()) {
 			try {
-				if (flush<rfid_ids.length)
-					flushInitialLocation(flush++);
-				else
-					somebodyComesAndGoes();
+				int t = selectLuckyWinner();
+				dispatchEvent(t);
+				setNewLocations(t);
+				resetAndIncrementStaleCounters(t);
 				Thread.sleep(250);
 			} catch (InterruptedException e) {
 				eh.close();
@@ -68,68 +74,47 @@ public class HungerGamesSimulator {
 	}
 
 
-	private void assignInitialLocation() {
-		for (int i=0; i<rfid_ids.length; i++) 
-			rfid_ids[i].setCurrentLocation(patches[new Random().nextInt(patches.length)]);
+	private void assignInitialDestination() {
+		for (Tag t: tags)
+			t.setDesiredDestination(patches[new Random().nextInt(patches.length)]);
 	}
 	
 	
-	private void flushInitialLocation(int i) {
-		ObjectNode payload =  JsonNodeFactory.instance.objectNode();
-		ArrayNode arrivals = JsonNodeFactory.instance.arrayNode();
-		ArrayNode departures = JsonNodeFactory.instance.arrayNode();
-		arrivals.add(rfid_ids[i].getId());
-		payload.put("arrivals", arrivals);
-		payload.put("departures", departures);
-		eh.generateEvent(new LTGEvent("rfid_update", null, rfid_ids[i].getCurrentLocation(), payload));
-	}
-
-
-	private void somebodyComesAndGoes() {
-		int ti = selectLuckyWinner();
-		// Departure from current location
-		ObjectNode payload1 =  JsonNodeFactory.instance.objectNode();
-		ArrayNode arrivals1 = JsonNodeFactory.instance.arrayNode();
-		ArrayNode departures1 = JsonNodeFactory.instance.arrayNode();
-		departures1.add(rfid_ids[ti].getId());
-		payload1.put("arrivals", arrivals1);
-		payload1.put("departures", departures1);
-		eh.generateEvent(new LTGEvent("rfid_update", null, rfid_ids[ti].getCurrentLocation(), payload1));
-		// Set new location and reset stale counter
-		setNewLocationAndResetStaleCounter(ti);
-		// Arrival at new location
-		ObjectNode payload2 =  JsonNodeFactory.instance.objectNode();
-		ArrayNode arrivals2 = JsonNodeFactory.instance.arrayNode();
-		ArrayNode departures2 = JsonNodeFactory.instance.arrayNode();
-		arrivals2.add(rfid_ids[ti].getId());
-		payload1.put("arrivals", arrivals2);
-		payload1.put("departures", departures2);
-		eh.generateEvent(new LTGEvent("rfid_update", null, rfid_ids[ti].getCurrentLocation(), payload2));
-	}
-
-
-
-	private void setNewLocationAndResetStaleCounter(int tagIndex) {
-		rfid_ids[tagIndex].setCurrentLocation(selectNewLocation(tagIndex));
-		// Increment stale counter for all 
-		for(int i=0; i<rfid_ids.length; i++)
-			rfid_ids[i].stale++;
-		rfid_ids[tagIndex].stale=0;
-	}
-
-
-	private String selectNewLocation(int tagIndex) {
-		String newLocation = null;
-		do {
-			newLocation = patches[new Random().nextInt(patches.length)];
-		} while (newLocation==rfid_ids[tagIndex].getCurrentLocation());
-		return newLocation;
-	}
-
-
 	private int selectLuckyWinner() {
-		return new Random().nextInt(rfid_ids.length);
+		Collections.sort(tags);
+		return new Random().nextInt(tags.size()/4);
 	}
+	
+	
+	private void dispatchEvent(int i) {
+		ObjectNode payload = JsonNodeFactory.instance.objectNode();
+		payload.put("id", tags.get(i).getId());
+		payload.put("departure", tags.get(i).getCurrentLocation());
+		payload.put("arrival", tags.get(i).getDesiredDestination());
+		LTGEvent e = new LTGEvent("rfid_update", null, null, payload);
+		//eh.generateEvent(e);
+	}
+
+	private void setNewLocations(int idx) {
+		String old_desired_location_now_current = tags.get(idx).getDesiredDestination();
+		String new_desired_location = null;
+		do {
+			new_desired_location = patches[new Random().nextInt(patches.length)];
+		} while (new_desired_location==tags.get(idx).getCurrentLocation());
+		tags.get(idx).setDesiredDestination(new_desired_location);
+		tags.get(idx).setCurrentLocation(old_desired_location_now_current);
+	}
+
+	
+	private void resetAndIncrementStaleCounters(int idx) {
+		// Increment stale counter for all... 
+		for (Tag t: tags)
+			t.incrementStaleCounter();
+		// ... but idx, which gets a reset
+		tags.get(idx).resetStaleCounter();
+	}
+
+	
 
 
 	/**
