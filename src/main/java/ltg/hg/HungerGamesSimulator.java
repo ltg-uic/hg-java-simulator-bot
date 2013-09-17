@@ -21,13 +21,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class HungerGamesSimulator {
 
 	private Tag[] rfid_ids_array = {	
-			new Tag("1623305"), new Tag("1623303"), new Tag("1623386"), new Tag("1623210"), new Tag("1623373"), 
-			new Tag("1623115"), new Tag("1623667"), new Tag("1623110"), new Tag("1623683"), new Tag("1623257"),
-			new Tag("1623126"), new Tag("1623238"), new Tag("1623624"), new Tag("1623454"), new Tag("1623972"),
-			new Tag("1623302"), new Tag("1623392"), new Tag("1623663"), new Tag("1623728"), new Tag("1623641")
+			new Tag("arg"), new Tag("baf"), new Tag("boz"), new Tag("dob"), new Tag("fot"), 
+			new Tag("gub"), new Tag("hap"), new Tag("jur"), new Tag("kep"), new Tag("mid"),
+			new Tag("nar"), new Tag("pab"), new Tag("pha"), new Tag("ren"), new Tag("som"),
+			new Tag("sug"), new Tag("tuz"), new Tag("wat"), new Tag("wir"), new Tag("yim")
 	};
 	private List<Tag> tags = Arrays.asList(rfid_ids_array); 
-	private String[] patches = {"patch-1", "patch-2", "patch-3", "patch-4", "patch-5", "patch-6"};
+	private String[] patches = {"patch-a", "patch-b", "patch-c", "patch-d", "patch-e", "patch-f"};
 
 	private LTGEventHandler eh = null;
 
@@ -66,7 +66,7 @@ public class HungerGamesSimulator {
 				dispatchEvent(t);
 				setNewLocations(t);
 				resetAndIncrementStaleCounters(t);
-				Thread.sleep(250);
+				Thread.sleep(1000 + (long) Math.random()*1000 );
 			} catch (InterruptedException e) {
 				eh.close();
 			}
