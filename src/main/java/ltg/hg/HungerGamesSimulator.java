@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import ltg.commons.ltg_handler.LTGEvent;
-import ltg.commons.ltg_handler.LTGEventHandler;
+import ltg.commons.ltg_event_handler.LTGEvent;
+import ltg.commons.ltg_event_handler.SingleChatLTGEventHandler;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,7 +29,7 @@ public class HungerGamesSimulator {
 	private List<Tag> tags = Arrays.asList(rfid_ids_array); 
 	private String[] patches = {"patch-a", "patch-b", "patch-c", "patch-d", "patch-e", "patch-f"};
 
-	private LTGEventHandler eh = null;
+	private SingleChatLTGEventHandler eh = null;
 
 
 	public HungerGamesSimulator(String usernameAndPass, String chatAndDBId) { 
@@ -37,7 +37,7 @@ public class HungerGamesSimulator {
 		// --------------
 		// Initialize bot
 		// --------------
-		eh = new LTGEventHandler(usernameAndPass+"@ltg.evl.uic.edu", usernameAndPass, chatAndDBId+"@conference.ltg.evl.uic.edu");
+		eh = new SingleChatLTGEventHandler(usernameAndPass+"@ltg.evl.uic.edu", usernameAndPass, chatAndDBId+"@conference.ltg.evl.uic.edu");
 		
 
 		// ------------------
@@ -68,7 +68,7 @@ public class HungerGamesSimulator {
 				resetAndIncrementStaleCounters(t);
 				Thread.sleep(1000 + (long) Math.random()*1000 );
 			} catch (InterruptedException e) {
-				eh.close();
+				eh.shutdown();
 			}
 		}
 	}

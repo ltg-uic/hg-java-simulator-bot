@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ltg</groupId>
 	<artifactId>hg-java-simulator-bot</artifactId>
-	<version>1.0</version>
+	<version>1.1.0</version>
 
 	<name>Simulator bot for the Hunger Games</name>
 
@@ -50,7 +50,7 @@
 		<dependency>
 			<groupId>ltg</groupId>
 			<artifactId>ltg-java-event-handler</artifactId>
-			<version>1.5</version>
+			<version>2.0.0-beta1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
