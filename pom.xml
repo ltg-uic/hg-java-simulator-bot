@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ltg</groupId>
 	<artifactId>hg-java-simulator-bot</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 
 	<name>Simulator bot for the Hunger Games</name>
 
