@@ -3,8 +3,8 @@ package ltg.hg;
 public class Tag implements Comparable<Tag> {
 	
 	private String id = null;
-	private String currentLocation = null;
-	private String desiredDestination = null;
+	private String origin = null;
+	private String destination = null;
 	private int stale = 0;
 	
 	
@@ -17,23 +17,23 @@ public class Tag implements Comparable<Tag> {
 		return id;
 	}
 	
-	public String getCurrentLocation() {
-		return currentLocation;
+	public String getOrigin() {
+		return origin;
 	}
 
 
-	public void setCurrentLocation(String currentLocation) {
-		this.currentLocation = currentLocation;
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 	
 	
-	public String getDesiredDestination() {
-		return desiredDestination;
+	public String getDestination() {
+		return destination;
 	}
 
 
-	public void setDesiredDestination(String desiredDestination) {
-		this.desiredDestination = desiredDestination;
+	public void setDestination(String destination) {
+		this.destination = destination;
 	}
 	
 	public void resetStaleCounter() {
@@ -51,7 +51,7 @@ public class Tag implements Comparable<Tag> {
 	
 	@Override
 	public String toString() {
-		return this.id + " @ " + currentLocation + " -> " + desiredDestination;
+		return this.id + " @ " + origin + " -> " + destination;
 	}
 
 

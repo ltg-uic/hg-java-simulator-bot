@@ -64,7 +64,7 @@ public class HungerGamesSimulator {
 			try {
 				int t = selectLuckyWinner();
 				dispatchEvent(t);
-				setNewLocations(t);
+				updateLocations(t);
 				resetAndIncrementStaleCounters(t);
 				Thread.sleep(1000 + (long) Math.random()*1000 );
 			} catch (InterruptedException e) {
@@ -76,7 +76,7 @@ public class HungerGamesSimulator {
 
 	private void assignInitialDestination() {
 		for (Tag t: tags)
-			t.setDesiredDestination(patches[new Random().nextInt(patches.length)]);
+			t.setDestination(patches[new Random().nextInt(patches.length)]);
 	}
 	
 	
@@ -90,21 +90,21 @@ public class HungerGamesSimulator {
 	private void dispatchEvent(int i) {
 		ObjectNode payload = JsonNodeFactory.instance.objectNode();
 		payload.put("id", tags.get(i).getId());
-		payload.put("departure", tags.get(i).getCurrentLocation());
-		payload.put("arrival", tags.get(i).getDesiredDestination());
+		payload.put("departure", tags.get(i).getOrigin());
+		payload.put("arrival", tags.get(i).getDestination());
 		LTGEvent e = new LTGEvent("rfid_update", null, null, payload);
 		eh.generateEvent(e);
 	}
 
 	
-	private void setNewLocations(int idx) {
-		String old_desired_location_now_current = tags.get(idx).getDesiredDestination();
-		String new_desired_location = null;
+	private void updateLocations(int idx) {
+		String old_destination_now_origin = tags.get(idx).getDestination();
+		String new_destination = null;
 		do {
-			new_desired_location = patches[new Random().nextInt(patches.length)];
-		} while (new_desired_location==tags.get(idx).getCurrentLocation());
-		tags.get(idx).setDesiredDestination(new_desired_location);
-		tags.get(idx).setCurrentLocation(old_desired_location_now_current);
+			new_destination = patches[new Random().nextInt(patches.length)];
+		} while (new_destination == old_destination_now_origin);
+		tags.get(idx).setDestination(new_destination);
+		tags.get(idx).setOrigin(old_destination_now_origin);
 	}
 
 	
